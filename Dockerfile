@@ -22,6 +22,6 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . /app/
 
-EXPOSE 8502
+EXPOSE 8507
 
 CMD ["gradio", "app.py"]
