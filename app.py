@@ -1,6 +1,6 @@
 import gradio as gr
 import os
-from utilities.openai_tools import process_situation, format_petty_officer_response, assistant_petty_officer
+from utilities.openai_tools import process_situation
 from dotenv import load_dotenv
 import re
 
@@ -19,9 +19,6 @@ def petty_officer_analysis(situation):
     try:
         # Process the situation - now returns plain text
         response_text = process_situation(situation)
-        
-        # Parse the response text to extract infractions
-        infractions_html = ""
         
         # Split the response by numbered items and format as HTML
         lines = response_text.split("\n")
