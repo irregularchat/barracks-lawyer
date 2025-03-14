@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          lfs: true  # Important: This enables Git LFS in the checkout
 
       - name: Setup Git LFS
         run: |
@@ -49,6 +50,5 @@ jobs:
           # Configure Git to use the token with Hugging Face
           git remote add space https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME
           
-          # Push to Hugging Face Space with LFS
-          git lfs push --all space main
+          # Push to Hugging Face Space
           git push space main:main --force
