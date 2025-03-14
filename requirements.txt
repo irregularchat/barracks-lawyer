@@ -1,7 +1,8 @@
 # ./requirements.txt
 openai
-gradio  
-dotenv
+python-dotenv
+gradio
+requests
 
 
 
