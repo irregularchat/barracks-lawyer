@@ -28,3 +28,4 @@ jobs:
           
           # Push to Hugging Face Space
           git push space main:main --force
+          git push space main:main --force
