@@ -18,26 +18,13 @@ Military Barracks Lawyer is a fun, interactive web app built with Python and Gra
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/military-barracks-lawyer.git
+   git clone https://github.com/irregularchat/barracks-lawyer.git
    cd military-barracks-lawyer
 
-	2.	Create and Activate a Virtual Environment:
-
-python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
-
-
-	3.	Install Dependencies:
-
-pip install -r requirements.txt
-
-Note: Ensure you have Python 3.7 or higher installed.
-
-Usage
-	1.	Run the App:
-
-python app.py
-
+	2.	Docker
+```
+docker compose up -d --build
+```
 
 	2.	Open in Browser:
 The app will launch a local Gradio interface. Open the provided URL in your browser to interact with the Military Barracks Lawyer.
