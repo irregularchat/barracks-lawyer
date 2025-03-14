@@ -3,11 +3,15 @@
 Military Barracks Lawyer is a fun, interactive web app built with Python and Gradio. It helps users search through military regulations and policies while offering advice on whether certain actions are "worth it or not." Additionally, it assists by populating events and suggesting angles to argue that something might be in violation of existing rules.
 
 ## Features
+### Offensive 
+- **Offensive Lawyer "Petty Officer"**: Given a situation, the app will provide find or make up reasons that it is a violation of military regulations, policy, norms, or etiquette.
 
+### Defensive
+- **Defensive Lawyer "Chud Advocate"**: Given a situation, the app will provide find or make up reasons that it is not a violation of military regulations, policy, norms, or etiquette.
+## Counsel
 - **Regulation & Policy Search:** Quickly search and filter through military regulations and policy documents.
 - **Worth It or Not Advice:** Get pre-action advice on whether an activity is advisable.
-- **Incident Analysis:** Input event details as a "petty officer" and receive guidance on potential policy violations.
-- **User-Friendly Interface:** Interactive web interface powered by Gradio for seamless user experience.
+
 
 ## Installation
 
