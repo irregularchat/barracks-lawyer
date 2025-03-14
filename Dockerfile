@@ -18,6 +18,12 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
+# Create static directory and ensure it exists
+RUN mkdir -p /app/static
+
+# Copy the static directory first (if you update just the logo, this layer can be cached)
+COPY static/ /app/static/
+
 # Copy the rest of the application code
 COPY . /app/
 
