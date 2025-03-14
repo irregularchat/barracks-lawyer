@@ -8,8 +8,7 @@ import json
 load_dotenv()
 
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    organization=os.getenv("OPENAI_ORGANIZATION"),
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 def assistant_petty_officer():
