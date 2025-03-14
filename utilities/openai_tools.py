@@ -104,23 +104,46 @@ def run_assistant(thread_id, assistant_id):
                 if run_status.status == "completed":
                     print("Run completed successfully")
                     break
+                elif run_status.status == "requires_action":
+                    print("Run requires action - handling tool calls")
+                    
+                    # Get the required actions
+                    required_actions = run_status.required_action.submit_tool_outputs.tool_calls
+                    tool_outputs = []
+                    
+                    # Process each tool call
+                    for tool_call in required_actions:
+                        print(f"Processing tool call: {tool_call.function.name}")
+                        
+                        # Handle the list_infractions function
+                        if tool_call.function.name == "list_infractions":
+                            # The assistant will generate this itself, we don't need to provide real data
+                            # We're just submitting an empty response to let it continue
+                            tool_outputs.append({
+                                "tool_call_id": tool_call.id,
+                                "output": "{\"infractions\": [], \"summary\": \"\"}"
+                            })
+                    
+                    # Submit the tool outputs
+                    print(f"Submitting tool outputs: {tool_outputs}")
+                    client.beta.threads.runs.submit_tool_outputs(
+                        thread_id=thread_id,
+                        run_id=run.id,
+                        tool_outputs=tool_outputs
+                    )
                 elif run_status.status in ["failed", "cancelled", "expired"]:
                     error_details = getattr(run_status, 'last_error', 'No detailed error information')
                     print(f"Run failed with status: {run_status.status}")
                     print(f"Error details: {error_details}")
                     
-                    # Try to get more detailed error information if available
-                    if hasattr(run_status, 'error') and run_status.error:
-                        print(f"Additional error info: {run_status.error}")
-                    
                     raise Exception(f"Run ended with status: {run_status.status}. Details: {error_details}")
             except Exception as poll_error:
                 print(f"Error polling run status: {str(poll_error)}")
-                if attempt > 10:  # Prevent infinite loops
+                if attempt > 30:  # Increased max attempts
                     raise
             
             # Wait before polling again
-            time.sleep(2)  # Increased wait time
+            time.sleep(2)
         
         return run.id
     except Exception as e:
