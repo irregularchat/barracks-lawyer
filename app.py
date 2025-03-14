@@ -43,12 +43,32 @@ def petty_officer_analysis(situation):
             </div>"""
 
 # Create the Gradio interface
-with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), 
-               css="#logo {padding: 10px; background-color: #f0f0f0; border-radius: 10px;}") as app:
+with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css="""
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    .logo-image {
+        max-height: 120px;
+        object-fit: contain;
+        border-radius: 5px;
+    }
+""") as app:
     with gr.Row(elem_id="header"):
         with gr.Column(scale=1):
-            gr.Image("static/logo.jpeg", elem_id="logo", show_label=False, 
-                    container=False, height=100)
+            # Use HTML component instead of Box
+            gr.HTML("""
+                <div style="text-align: center;">
+                    <img src="/gradio_api/file=static/logo.png" alt="Military Barracks Lawyer Logo" 
+                         style="max-height: 120px; border-radius: 5px;">
+                </div>
+            """)
+        
         with gr.Column(scale=3):
             gr.Markdown(
                 """
@@ -76,7 +96,7 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(),
     gr.Examples(
         [
             ["I was 5 minutes late to formation because my car wouldn't start."],
-            ["I forgot to salute an officer while I was carrying boxes to my barracks."],
+            ["I finished all work assigned early, so I went to the gym."],
             ["I wore white socks instead of black socks with my uniform today."],
             ["I took a 35-minute lunch break instead of the allowed 30 minutes."],
             ["My roommate played music after lights out."]
