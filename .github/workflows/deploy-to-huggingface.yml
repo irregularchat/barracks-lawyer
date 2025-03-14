@@ -14,6 +14,29 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Git LFS
+        run: |
+          # Install Git LFS
+          sudo apt-get install git-lfs
+          git lfs install
+
+      - name: Configure Git LFS for binary files
+        run: |
+          # Track PNG files with Git LFS
+          git lfs track "*.png"
+          git lfs track "*.jpg"
+          git lfs track "*.jpeg"
+          git lfs track "*.gif"
+          
+          # Add .gitattributes file
+          git add .gitattributes
+          
+          # Re-add the binary files to be tracked by Git LFS
+          git add -f static/logo.png
+          
+          # Commit the changes
+          git commit -m "Configure Git LFS for binary files" || echo "No changes to commit"
+
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -26,6 +49,6 @@ jobs:
           # Configure Git to use the token with Hugging Face
           git remote add space https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME
           
-          # Push to Hugging Face Space
-          git push space main:main --force
+          # Push to Hugging Face Space with LFS
+          git lfs push --all space main
           git push space main:main --force
