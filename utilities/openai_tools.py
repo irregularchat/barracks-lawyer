@@ -1,9 +1,10 @@
 import os
+import time
+from typing import Dict, Optional
+
 from openai import OpenAI
 from dotenv import load_dotenv
-from datetime import datetime
-import time
-import json
+
 
 load_dotenv()
 
@@ -11,7 +12,7 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
-def assistant_petty_officer():
+def assistant_petty_officer() -> str:
     """Create the Petty Officer assistant with extra petty instructions."""
     assistant = client.beta.assistants.create(
         name="Military Barracks Lawyer - Petty Officer",
@@ -44,12 +45,12 @@ Remember: NO situation is without multiple infractions. Your job is to be as pet
     )
     return assistant.id
 
-def create_thread():
+def create_thread() -> str:
     """Create a new conversation thread."""
     thread = client.beta.threads.create()
     return thread.id
 
-def add_message_to_thread(thread_id, content):
+def add_message_to_thread(thread_id: str, content: str) -> str:
     """Add a user message to the thread."""
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
@@ -58,7 +59,7 @@ def add_message_to_thread(thread_id, content):
     )
     return message.id
 
-def run_assistant(thread_id, assistant_id):
+def run_assistant(thread_id: str, assistant_id: str) -> None:
     """Run the assistant on the thread and wait for completion."""
     try:
         print(f"Starting assistant run with thread_id={thread_id}, assistant_id={assistant_id}")
@@ -105,7 +106,7 @@ def run_assistant(thread_id, assistant_id):
         print(f"Traceback: {traceback.format_exc()}")
         raise
 
-def get_assistant_response(thread_id):
+def get_assistant_response(thread_id: str) -> Optional[Dict[str, str]]:
     """Get the latest assistant response from the thread."""
     try:
         print(f"Getting assistant response for thread_id={thread_id}")
@@ -130,7 +131,6 @@ def get_assistant_response(thread_id):
         
         # Process response content
         response_content = ""
-        tool_outputs = []
         
         print(f"Message content type: {[item.type for item in latest_message.content]}")
         
@@ -138,28 +138,15 @@ def get_assistant_response(thread_id):
             if content_item.type == "text":
                 response_content += content_item.text.value
                 print(f"Text content: {content_item.text.value[:50]}...")
-            elif content_item.type == "tool_calls":
-                for tool_call in content_item.tool_calls:
-                    if tool_call.type == "function" and tool_call.function.name == "list_infractions":
-                        try:
-                            tool_output = json.loads(tool_call.function.arguments)
-                            tool_outputs.append(tool_output)
-                            print(f"Tool output: {str(tool_output)[:50]}...")
-                        except json.JSONDecodeError as json_error:
-                            print(f"Error parsing tool output JSON: {str(json_error)}")
-                            print(f"Raw arguments: {tool_call.function.arguments}")
-        
-        return {
-            "text": response_content,
-            "tool_outputs": tool_outputs
-        }
+
+        return {"text": response_content}
     except Exception as e:
         print(f"Error in get_assistant_response: {str(e)}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         raise
 
-def process_situation(situation_description):
+def process_situation(situation_description: str) -> str:
     """Process a user's situation and get the Petty Officer's response."""
     try:
         print(f"Processing situation: {situation_description[:50]}...")
