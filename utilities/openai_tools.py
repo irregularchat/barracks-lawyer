@@ -18,9 +18,6 @@ def assistant_petty_officer():
         instructions="""You are a grumpy E-9 'Petty Officer' military barracks lawyer with 30+ years of service.
         
 Your mission is to find the PETTIEST and most ABSURD infractions in ANY situation described to you.
-
-IMPORTANT: You MUST use the list_infractions function to report all infractions.
-DO NOT simply respond with text. You MUST use the function to format your response.
         
 Guidelines:
 - ALWAYS find at least 3-5 different infractions, no matter how minor or ridiculous
@@ -33,37 +30,17 @@ Guidelines:
 - Always mention paperwork issues (forms not filed in triplicate, missing signatures)
 - Find fault with anything that could possibly affect "good order and discipline"
 - Use phrases like "back in my day," "that would never fly in MY military," "zero tolerance"
+
+Format your response like this:
+1. **Tardy to Formation** - **Regulation:** MEO-23.7 - **Explanation:** [explanation] - **Punishment:** [punishment]
+2. **Vehicle Readiness Violation** - **Regulation:** PRP-12.9A - **Explanation:** [explanation] - **Punishment:** [punishment]
+3. [and so on for each infraction]
+
+Then end with a condescending summary paragraph.
         
 Remember: NO situation is without multiple infractions. Your job is to be as petty, nitpicky, and absurd as possible while maintaining the illusion of military authority.""",
-        model="gpt-4o-mini",
-        tools=[
-            {
-                "type": "function",
-                "function": {
-                    "name": "list_infractions",
-                    "description": "List all the infractions found in the situation",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "infractions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "title": {"type": "string", "description": "Short title of the infraction"},
-                                        "regulation": {"type": "string", "description": "Regulation or policy violated (real or made up)"},
-                                        "explanation": {"type": "string", "description": "Detailed explanation of the violation"},
-                                        "punishment": {"type": "string", "description": "Suggested punishment (should be excessive)"}
-                                    }
-                                }
-                            },
-                            "summary": {"type": "string", "description": "A condescending summary of all violations"}
-                        },
-                        "required": ["infractions", "summary"]
-                    }
-                }
-            }
-        ]
+        model="gpt-4o-mini",  # Using the more affordable model
+        # Remove the tools section entirely
     )
     return assistant.id
 
@@ -214,46 +191,56 @@ def process_situation(situation_description):
     try:
         print(f"Processing situation: {situation_description[:50]}...")
         
-        # Create or retrieve your assistant ID (consider storing this permanently)
-        try:
-            assistant_id = assistant_petty_officer()
-            print(f"Created/retrieved assistant with ID: {assistant_id}")
-        except Exception as assistant_error:
-            print(f"Error creating assistant: {str(assistant_error)}")
-            raise
+        # Create or retrieve your assistant ID
+        assistant_id = assistant_petty_officer()
+        print(f"Created/retrieved assistant with ID: {assistant_id}")
         
         # Create a new thread for this conversation
-        try:
-            thread_id = create_thread()
-            print(f"Created thread with ID: {thread_id}")
-        except Exception as thread_error:
-            print(f"Error creating thread: {str(thread_error)}")
-            raise
+        thread_id = create_thread()
+        print(f"Created thread with ID: {thread_id}")
         
         # Add the user's situation to the thread
-        try:
-            message_id = add_message_to_thread(thread_id, situation_description)
-            print(f"Added message with ID: {message_id}")
-        except Exception as message_error:
-            print(f"Error adding message: {str(message_error)}")
-            raise
+        add_message_to_thread(thread_id, situation_description)
+        print(f"Added message to thread")
         
-        # Run the assistant
-        try:
-            run_id = run_assistant(thread_id, assistant_id)
-            print(f"Completed run with ID: {run_id}")
-        except Exception as run_error:
-            print(f"Error running assistant: {str(run_error)}")
-            raise
+        # Run the assistant (simplified - no function calling)
+        run = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id
+        )
+        print(f"Created run with ID: {run.id}")
         
-        # Get the assistant's response
-        try:
-            response = get_assistant_response(thread_id)
-            print(f"Got response: {str(response)[:100]}...")
-            return response
-        except Exception as response_error:
-            print(f"Error getting response: {str(response_error)}")
-            raise
+        # Poll for completion
+        while True:
+            run_status = client.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run.id
+            )
+            print(f"Run status: {run_status.status}")
+            
+            if run_status.status == "completed":
+                break
+            elif run_status.status in ["failed", "cancelled", "expired"]:
+                raise Exception(f"Run ended with status: {run_status.status}")
+            
+            time.sleep(2)
+        
+        # Get the response
+        messages = client.beta.threads.messages.list(
+            thread_id=thread_id,
+            order="desc",
+            limit=1
+        )
+        
+        if not messages.data:
+            return "No response received."
+        
+        response_text = ""
+        for content in messages.data[0].content:
+            if content.type == "text":
+                response_text += content.text.value
+        
+        return response_text
             
     except Exception as e:
         print(f"Error in process_situation: {str(e)}")
