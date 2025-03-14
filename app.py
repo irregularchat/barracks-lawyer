@@ -20,48 +20,15 @@ def petty_officer_analysis(situation):
         # Process the situation - now returns plain text
         response_text = process_situation(situation)
         
-        # Parse the response text to extract infractions
-        infractions_html = ""
-        
-        # Split the response by numbered items and format as HTML
-        lines = response_text.split("\n")
-        assessment = []
-        infractions = []
-        
-        # Collect lines until we hit a numbered item
-        for line in lines:
-            if re.match(r'^\d+\.', line.strip()):
-                infractions.append(line)
-            else:
-                assessment.append(line)
-        
-        # Join the assessment lines
-        assessment_text = "\n".join(assessment).strip()
-        
-        # Format the HTML output
+        # Format the HTML output - ONLY include the assessment section
         output = f"""
         <div style="font-family: Arial, sans-serif;">
             <h3 style="color: #8B0000; border-bottom: 1px solid #ccc; padding-bottom: 8px;">PETTY OFFICER'S ASSESSMENT:</h3>
-            <p style="white-space: pre-wrap;">{assessment_text}</p>
-            
-            <h3 style="color: #8B0000; border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-top: 20px;">INFRACTIONS IDENTIFIED:</h3>
-        """
-        
-        if infractions:
-            for infraction in infractions:
-                output += f"""
-                <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #d00; background-color: #fff0f0; border-radius: 5px;">
-                    <p style="white-space: pre-wrap;">{infraction}</p>
-                </div>
-                """
-        else:
-            output += f"""
-            <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #d00; background-color: #fff0f0; border-radius: 5px;">
-                <p style="white-space: pre-wrap;">{response_text}</p>
+            <div style="white-space: pre-wrap; padding: 15px; border: 1px solid #d00; background-color: #fff0f0; border-radius: 5px;">
+                {response_text}
             </div>
-            """
-        
-        output += "</div>"
+        </div>
+        """
         
         return output
         
