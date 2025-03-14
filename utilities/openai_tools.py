@@ -86,33 +86,6 @@ def run_assistant(thread_id, assistant_id):
                 if run_status.status == "completed":
                     print("Run completed successfully")
                     break
-                elif run_status.status == "requires_action":
-                    print("Run requires action - handling tool calls")
-                    
-                    # Get the required actions
-                    required_actions = run_status.required_action.submit_tool_outputs.tool_calls
-                    tool_outputs = []
-                    
-                    # Process each tool call
-                    for tool_call in required_actions:
-                        print(f"Processing tool call: {tool_call.function.name}")
-                        
-                        # Handle the list_infractions function
-                        if tool_call.function.name == "list_infractions":
-                            # The assistant will generate this itself, we don't need to provide real data
-                            # We're just submitting an empty response to let it continue
-                            tool_outputs.append({
-                                "tool_call_id": tool_call.id,
-                                "output": "{\"infractions\": [], \"summary\": \"\"}"
-                            })
-                    
-                    # Submit the tool outputs
-                    print(f"Submitting tool outputs: {tool_outputs}")
-                    client.beta.threads.runs.submit_tool_outputs(
-                        thread_id=thread_id,
-                        run_id=run.id,
-                        tool_outputs=tool_outputs
-                    )
                 elif run_status.status in ["failed", "cancelled", "expired"]:
                     error_details = getattr(run_status, 'last_error', 'No detailed error information')
                     print(f"Run failed with status: {run_status.status}")
@@ -248,25 +221,3 @@ Remember: NO situation is without multiple infractions. Your job is to be as pet
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         raise
-
-def format_petty_officer_response(response):
-    """Format the Petty Officer's response for display."""
-    if not response or "tool_outputs" not in response or not response["tool_outputs"]:
-        return {
-            "message": response.get("text", "No infractions found. This is highly suspicious and may itself be an infraction."),
-            "infractions": []
-        }
-    
-    tool_output = response["tool_outputs"][0]
-    infractions = tool_output.get("infractions", [])
-    summary = tool_output.get("summary", "")
-    
-    # Add the text response if any
-    message = response.get("text", "") 
-    if not message and summary:
-        message = summary
-    
-    return {
-        "message": message,
-        "infractions": infractions
-    }
