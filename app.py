@@ -60,7 +60,7 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(),
                css="#logo {padding: 10px; background-color: #f0f0f0; border-radius: 10px;}") as app:
     with gr.Row(elem_id="header"):
         with gr.Column(scale=1):
-            gr.Image("static/logo.png", elem_id="logo", show_label=False, 
+            gr.Image("static/logo.jpeg", elem_id="logo", show_label=False, 
                     container=False, height=100)
         with gr.Column(scale=3):
             gr.Markdown(
