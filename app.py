@@ -59,15 +59,17 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
         border-radius: 5px;
     }
 """) as app:
-    with gr.Row(elem_id="header"):
+    with gr.Row():
         with gr.Column(scale=1):
-            # Use HTML component instead of Box
-            gr.HTML("""
-                <div style="text-align: center;">
-                    <img src="/gradio_api/file=static/logo.png" alt="Military Barracks Lawyer Logo" 
-                         style="max-height: 120px; border-radius: 5px;">
-                </div>
-            """)
+            # Use gr.Image with proper parameters
+            gr.Image(
+                value="static/logo.png",  # Path to your logo
+                show_label=False,         # Hide the label
+                container=False,          # Remove container styling
+                height=120,               # Set fixed height
+                width=120,                # Set fixed width
+                interactive=False         # Make it non-interactive (display only)
+            )
         
         with gr.Column(scale=3):
             gr.Markdown(
