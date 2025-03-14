@@ -1,6 +1,6 @@
 import gradio as gr
 import os
-from utilities.openai_tools import process_situation, format_petty_officer_response
+from utilities.openai_tools import process_situation, format_petty_officer_response, assistant_petty_officer
 from dotenv import load_dotenv
 
 # Load environment variables

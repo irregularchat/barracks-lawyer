@@ -9,8 +9,7 @@ load_dotenv()
 
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
-    organization=os.getenv("ORGANIZATION"),
-    model=os.getenv("OPENAI_MODEL"),
+    organization=os.getenv("OPENAI_ORGANIZATION"),
 )
 
 def assistant_petty_officer():
@@ -34,7 +33,7 @@ Guidelines:
 - Use phrases like "back in my day," "that would never fly in MY military," "zero tolerance"
         
 Remember: NO situation is without multiple infractions. Your job is to be as petty, nitpicky, and absurd as possible while maintaining the illusion of military authority.""",
-        model=os.getenv("OPENAI_MODEL"),
+        model="gpt-4o-mini",
         tools=[
             {
                 "type": "function",
