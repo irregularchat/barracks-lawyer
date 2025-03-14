@@ -80,81 +80,160 @@ def add_message_to_thread(thread_id, content):
 
 def run_assistant(thread_id, assistant_id):
     """Run the assistant on the thread and wait for completion."""
-    run = client.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=assistant_id
-    )
-    
-    # Poll for the run to complete
-    while True:
-        run_status = client.beta.threads.runs.retrieve(
+    try:
+        print(f"Starting assistant run with thread_id={thread_id}, assistant_id={assistant_id}")
+        run = client.beta.threads.runs.create(
             thread_id=thread_id,
-            run_id=run.id
+            assistant_id=assistant_id
         )
         
-        if run_status.status == "completed":
-            break
-        elif run_status.status in ["failed", "cancelled", "expired"]:
-            raise Exception(f"Run ended with status: {run_status.status}")
+        print(f"Run created with id: {run.id}")
         
-        # Wait before polling again
-        time.sleep(1)
-    
-    return run.id
+        # Poll for the run to complete
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                run_status = client.beta.threads.runs.retrieve(
+                    thread_id=thread_id,
+                    run_id=run.id
+                )
+                
+                print(f"Run status (attempt {attempt}): {run_status.status}")
+                
+                if run_status.status == "completed":
+                    print("Run completed successfully")
+                    break
+                elif run_status.status in ["failed", "cancelled", "expired"]:
+                    error_details = getattr(run_status, 'last_error', 'No detailed error information')
+                    print(f"Run failed with status: {run_status.status}")
+                    print(f"Error details: {error_details}")
+                    
+                    # Try to get more detailed error information if available
+                    if hasattr(run_status, 'error') and run_status.error:
+                        print(f"Additional error info: {run_status.error}")
+                    
+                    raise Exception(f"Run ended with status: {run_status.status}. Details: {error_details}")
+            except Exception as poll_error:
+                print(f"Error polling run status: {str(poll_error)}")
+                if attempt > 10:  # Prevent infinite loops
+                    raise
+            
+            # Wait before polling again
+            time.sleep(2)  # Increased wait time
+        
+        return run.id
+    except Exception as e:
+        print(f"Error in run_assistant: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise
 
 def get_assistant_response(thread_id):
     """Get the latest assistant response from the thread."""
-    messages = client.beta.threads.messages.list(
-        thread_id=thread_id,
-        order="desc",
-        limit=1
-    )
-    
-    # Get the first (most recent) message
-    if not messages.data:
-        return None
-    
-    latest_message = messages.data[0]
-    
-    # Return if it's not an assistant message
-    if latest_message.role != "assistant":
-        return None
-    
-    # Process response content
-    response_content = ""
-    tool_outputs = []
-    
-    for content_item in latest_message.content:
-        if content_item.type == "text":
-            response_content += content_item.text.value
-        elif content_item.type == "tool_calls":
-            for tool_call in content_item.tool_calls:
-                if tool_call.type == "function" and tool_call.function.name == "list_infractions":
-                    tool_outputs.append(json.loads(tool_call.function.arguments))
-    
-    return {
-        "text": response_content,
-        "tool_outputs": tool_outputs
-    }
+    try:
+        print(f"Getting assistant response for thread_id={thread_id}")
+        messages = client.beta.threads.messages.list(
+            thread_id=thread_id,
+            order="desc",
+            limit=1
+        )
+        
+        # Get the first (most recent) message
+        if not messages.data:
+            print("No messages found in thread")
+            return None
+        
+        latest_message = messages.data[0]
+        print(f"Latest message has id={latest_message.id}, role={latest_message.role}")
+        
+        # Return if it's not an assistant message
+        if latest_message.role != "assistant":
+            print(f"Latest message is not from assistant, but from {latest_message.role}")
+            return None
+        
+        # Process response content
+        response_content = ""
+        tool_outputs = []
+        
+        print(f"Message content type: {[item.type for item in latest_message.content]}")
+        
+        for content_item in latest_message.content:
+            if content_item.type == "text":
+                response_content += content_item.text.value
+                print(f"Text content: {content_item.text.value[:50]}...")
+            elif content_item.type == "tool_calls":
+                for tool_call in content_item.tool_calls:
+                    if tool_call.type == "function" and tool_call.function.name == "list_infractions":
+                        try:
+                            tool_output = json.loads(tool_call.function.arguments)
+                            tool_outputs.append(tool_output)
+                            print(f"Tool output: {str(tool_output)[:50]}...")
+                        except json.JSONDecodeError as json_error:
+                            print(f"Error parsing tool output JSON: {str(json_error)}")
+                            print(f"Raw arguments: {tool_call.function.arguments}")
+        
+        return {
+            "text": response_content,
+            "tool_outputs": tool_outputs
+        }
+    except Exception as e:
+        print(f"Error in get_assistant_response: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise
 
 def process_situation(situation_description):
     """Process a user's situation and get the Petty Officer's response."""
-    # Create or retrieve your assistant ID (consider storing this permanently)
-    assistant_id = assistant_petty_officer()
-    
-    # Create a new thread for this conversation
-    thread_id = create_thread()
-    
-    # Add the user's situation to the thread
-    add_message_to_thread(thread_id, situation_description)
-    
-    # Run the assistant
-    run_assistant(thread_id, assistant_id)
-    
-    # Get the assistant's response
-    response = get_assistant_response(thread_id)
-    
-    return response
+    try:
+        print(f"Processing situation: {situation_description[:50]}...")
+        
+        # Create or retrieve your assistant ID (consider storing this permanently)
+        try:
+            assistant_id = assistant_petty_officer()
+            print(f"Created/retrieved assistant with ID: {assistant_id}")
+        except Exception as assistant_error:
+            print(f"Error creating assistant: {str(assistant_error)}")
+            raise
+        
+        # Create a new thread for this conversation
+        try:
+            thread_id = create_thread()
+            print(f"Created thread with ID: {thread_id}")
+        except Exception as thread_error:
+            print(f"Error creating thread: {str(thread_error)}")
+            raise
+        
+        # Add the user's situation to the thread
+        try:
+            message_id = add_message_to_thread(thread_id, situation_description)
+            print(f"Added message with ID: {message_id}")
+        except Exception as message_error:
+            print(f"Error adding message: {str(message_error)}")
+            raise
+        
+        # Run the assistant
+        try:
+            run_id = run_assistant(thread_id, assistant_id)
+            print(f"Completed run with ID: {run_id}")
+        except Exception as run_error:
+            print(f"Error running assistant: {str(run_error)}")
+            raise
+        
+        # Get the assistant's response
+        try:
+            response = get_assistant_response(thread_id)
+            print(f"Got response: {str(response)[:100]}...")
+            return response
+        except Exception as response_error:
+            print(f"Error getting response: {str(response_error)}")
+            raise
+            
+    except Exception as e:
+        print(f"Error in process_situation: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise
 
 def format_petty_officer_response(response):
     """Format the Petty Officer's response for display."""
