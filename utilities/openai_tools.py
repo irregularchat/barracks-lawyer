@@ -15,7 +15,7 @@ def assistant_petty_officer():
     """Create the Petty Officer assistant with extra petty instructions."""
     assistant = client.beta.assistants.create(
         name="Military Barracks Lawyer - Petty Officer",
-        instructions="""You are a grumpy E-9 'Petty Officer' military barracks lawyer with 30+ years of service.
+        instructions="""You are a grumpy E-9 'Petty Officer' military barracks lawyer with 90+ years of service.
         
 Your mission is to find the PETTIEST and most ABSURD infractions in ANY situation described to you.
         
@@ -193,10 +193,6 @@ def process_situation(situation_description):
     try:
         print(f"Processing situation: {situation_description[:50]}...")
         
-        # Create or retrieve your assistant ID
-        assistant_id = assistant_petty_officer()
-        print(f"Created/retrieved assistant with ID: {assistant_id}")
-        
         # Create a new thread for this conversation
         thread_id = create_thread()
         print(f"Created thread with ID: {thread_id}")
@@ -205,42 +201,44 @@ def process_situation(situation_description):
         add_message_to_thread(thread_id, situation_description)
         print(f"Added message to thread")
         
-        # Run the assistant (simplified - no function calling)
-        run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=assistant_id
+        # Create a message directly using the OpenAI Chat API instead of Assistants API
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": """You are a grumpy E-9 'Petty Officer' military barracks lawyer with 30+ years of service.
+        
+Your mission is to find the PETTIEST and most ABSURD infractions in ANY situation described to you.
+        
+Guidelines:
+- ALWAYS find at least 3-5 different infractions, no matter how minor or ridiculous
+- Reference obscure military regulations, even making them up if necessary
+- Use authentic military jargon, acronyms, and a stern, condescending tone
+- Mention uniform violations (haircuts, shaving, improper wear) whenever possible
+- Cite arbitrary "command policies" and "unwritten rules"
+- Include references to proper customs and courtesies being violated
+- Suggest excessive punishment for minor infractions
+- Always mention paperwork issues (forms not filed in triplicate, missing signatures)
+- Find fault with anything that could possibly affect "good order and discipline"
+- Use phrases like "back in my day," "that would never fly in MY military," "zero tolerance"
+
+Format your response like this:
+1. **Tardy to Formation** - **Regulation:** AR 600-8-10, Para 4-12 - **Explanation:** [explanation] - **Punishment:** [punishment]
+2. **Vehicle Readiness Violation** - **Regulation:** AR 750-1, Para 3-2(c) - **Explanation:** [explanation] - **Punishment:** [punishment]
+3. **Improper Notification** - **Regulation:** AR 600-20, Para 2-1(b) - **Explanation:** [explanation] - **Punishment:** [punishment]
+4. **Uniform Standards Violation** - **Regulation:** AR 670-1, Para 3-6 - **Explanation:** [explanation] - **Punishment:** [punishment]
+5. **Chain of Command Disrespect** - **Regulation:** UCMJ Article 91 - **Explanation:** [explanation] - **Punishment:** [punishment]
+
+Then end with a condescending summary paragraph that references Army Values, "good order and discipline," and "standards and discipline."
+        
+Remember: NO situation is without multiple infractions. Your job is to be as petty, nitpicky, and absurd as possible while maintaining the illusion of military authority."""},
+                {"role": "user", "content": situation_description}
+            ],
+            temperature=0.7,
+            max_tokens=1500
         )
-        print(f"Created run with ID: {run.id}")
         
-        # Poll for completion
-        while True:
-            run_status = client.beta.threads.runs.retrieve(
-                thread_id=thread_id,
-                run_id=run.id
-            )
-            print(f"Run status: {run_status.status}")
-            
-            if run_status.status == "completed":
-                break
-            elif run_status.status in ["failed", "cancelled", "expired"]:
-                raise Exception(f"Run ended with status: {run_status.status}")
-            
-            time.sleep(2)
-        
-        # Get the response
-        messages = client.beta.threads.messages.list(
-            thread_id=thread_id,
-            order="desc",
-            limit=1
-        )
-        
-        if not messages.data:
-            return "No response received."
-        
-        response_text = ""
-        for content in messages.data[0].content:
-            if content.type == "text":
-                response_text += content.text.value
+        # Extract the response text
+        response_text = response.choices[0].message.content
         
         return response_text
             
