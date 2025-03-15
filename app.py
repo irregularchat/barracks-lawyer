@@ -96,8 +96,6 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
                 lines=5
             )
             submit_button = gr.Button("Submit For Inspection", variant="primary")
-
-        with gr.Column():
             output_html = gr.HTML(label="Petty Officer's Response")
 
     # Example situations to try
