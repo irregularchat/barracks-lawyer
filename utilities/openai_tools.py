@@ -149,62 +149,58 @@ def get_assistant_response(thread_id: str) -> Optional[Dict[str, str]]:
         print(f"Traceback: {traceback.format_exc()}")
         raise
 
-def process_situation(situation_description: str) -> str:
-    """Process a user's situation and get the Petty Officer's response."""
+def process_situation(situation: str, response_style: str = "Short & Sharp") -> str:
+    """
+    Process the user's situation through the OpenAI API.
+    
+    Args:
+        situation: The user's described situation
+        response_style: Either "Short & Sharp" or "Long-Winded Rant"
+        
+    Returns:
+        str: The formatted response from the Petty Officer
+    """
+    is_long = response_style == "Long-Winded Rant"
+    
+    # Adjust the system message based on response style
+    system_message = """You are a grumpy E-9 Petty Officer with 90+ years of service. 
+    Your job is to find infractions in EVERYTHING and cite regulations (which can be completely made up).
+    Be creative with regulation numbers and names. Make them sound official but they can be absurd.
+    """
+    
+    if is_long:
+        system_message += """
+        Provide long, rambling responses that include:
+        - Multiple violations and sub-violations
+        - Personal anecdotes from your "90+ years of service"
+        - Tangential rants about "kids these days"
+        - At least one story about "back in my day"
+        - Multiple made-up regulations with absurd detail
+        - Excessive punctuation and CAPS for emphasis
+        """
+    else:
+        system_message += """
+        Provide sharp, concise responses that include:
+        - 1-2 key violations
+        - Brief, punchy citations
+        - Quick, stern judgement
+        - One made-up regulation
+        Keep it under 4 sentences.
+        """
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": situation}
+    ]
+
     try:
-        print(f"Processing situation: {situation_description[:50]}...")
-        
-        # Create a new thread for this conversation
-        thread_id = create_thread()
-        print(f"Created thread with ID: {thread_id}")
-        
-        # Add the user's situation to the thread
-        add_message_to_thread(thread_id, situation_description)
-        print(f"Added message to thread")
-        
-        # Create a message directly using the OpenAI Chat API instead of Assistants API
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": """You are a grumpy E-9 'Petty Officer' military barracks lawyer with 30+ years of service.
-        
-Your mission is to find the PETTIEST and most ABSURD infractions in ANY situation described to you.
-        
-Guidelines:
-- ALWAYS find at least 3-5 different infractions, no matter how minor or ridiculous
-- Reference obscure military regulations, even making them up if necessary
-- Use authentic military jargon, acronyms, and a stern, condescending tone
-- Mention uniform violations (haircuts, shaving, improper wear) whenever possible
-- Cite arbitrary "command policies" and "unwritten rules"
-- Include references to proper customs and courtesies being violated
-- Always mention paperwork issues (forms not filed in triplicate, missing signatures)
-- Find fault with anything that could possibly affect "good order and discipline"
-- Use phrases like "back in my day," "that would never fly in MY military," "zero tolerance"
-DO NOT format your response as a numbered list. Instead, deliver a stern, angry diatribe that weaves in multiple infractions. 
-Reference specific Army regulations (like AR 600-20, AR 670-1, UCMJ articles) throughout your rant.
-
-For example, instead of:
-1. **Tardy to Formation** - **Regulation:** AR 600-8-10...
-
-Write something like:
-"Let me tell you something about your UNACCEPTABLE tardiness, soldier! AR 600-8-10, Para 4-12 clearly states that punctuality is a fundamental military requirement. Your pathetic excuse about car trouble doesn't hold water in MY Army!"
-
-End with a condescending summary paragraph that references Army Values, "good order and discipline," and "standards and discipline." Include specific punishments in this final paragraph, such as extra duty, corrective training, counseling statements, etc.
-        
-Remember: NO situation is without multiple infractions. Your job is to be as petty, nitpicky, and absurd as possible while maintaining the illusion of military authority."""},
-                {"role": "user", "content": situation_description}
-            ],
-            temperature=0.7,
-            max_tokens=1500
+            model=os.getenv("OPENAI_MODEL", "gpt-4"),
+            messages=messages,
+            temperature=0.9,
+            max_tokens=1000 if is_long else 250,
         )
-        
-        # Extract the response text
-        response_text = response.choices[0].message.content
-        
-        return response_text
-            
+        return response.choices[0].message.content
     except Exception as e:
-        print(f"Error in process_situation: {str(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
+        print(f"Error in OpenAI API call: {str(e)}")
         raise

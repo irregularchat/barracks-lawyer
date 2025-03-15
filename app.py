@@ -18,14 +18,14 @@ if not os.getenv("OPENAI_API_KEY"):
         "OPENAI_API_KEY environment variable is not set. Please set it in your .env file."
     )
 
-def petty_officer_analysis(situation):
+def petty_officer_analysis(situation, response_style):
     """Process the user's situation through the Petty Officer assistant."""
     if not situation.strip():
         return "You can't fool me with blank reports, soldier! DESCRIBE YOUR SITUATION!"
 
     try:
-        # Process the situation - now returns plain text
-        response_text = process_situation(situation)
+        # Process the situation with the selected response style
+        response_text = process_situation(situation, response_style)
 
         # Format the HTML output - ONLY include the assessment section
         output = f"""
@@ -98,19 +98,25 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
                 placeholder="I was 5 minutes late to formation because my car wouldn't start...",
                 lines=5
             )
+            response_style = gr.Radio(
+                choices=["Short & Sharp", "Long-Winded Rant"],
+                value="Short & Sharp",
+                label="Petty Officer's Response Style",
+                info="Choose how the Petty Officer should respond to your infraction"
+            )
             submit_button = gr.Button("Submit For Inspection", variant="primary")
             output_html = gr.HTML(label="Petty Officer's Response")
 
-    # Example situations to try
+    # Example situations to try with both response styles
     gr.Examples(
         [
-            ["I was 5 minutes late to formation because my car wouldn't start."],
-            ["I finished all work assigned early, so I went to the gym."],
-            ["I wore white socks instead of black socks with my uniform today."],
-            ["I took a 35-minute lunch break instead of the allowed 30 minutes."],
-            ["My roommate played music after lights out."]
+            ["I was 5 minutes late to formation because my car wouldn't start.", "Short & Sharp"],
+            ["I finished all work assigned early, so I went to the gym.", "Long-Winded Rant"],
+            ["I wore white socks instead of black socks with my uniform today.", "Short & Sharp"],
+            ["I took a 35-minute lunch break instead of the allowed 30 minutes.", "Long-Winded Rant"],
+            ["My roommate played music after lights out.", "Short & Sharp"]
         ],
-        inputs=situation_input,
+        inputs=[situation_input, response_style],
         outputs=output_html,
         fn=petty_officer_analysis,
         cache_examples=False
@@ -119,7 +125,7 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
     # Set up the event handlers
     submit_button.click(
         fn=petty_officer_analysis,
-        inputs=situation_input,
+        inputs=[situation_input, response_style],
         outputs=output_html
     )
 
