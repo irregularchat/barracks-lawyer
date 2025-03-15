@@ -1,25 +1,31 @@
-import gradio as gr
+"""Gradio application main entry point. Runs the Petty Officer application"""
 import os
-from utilities.openai_tools import process_situation
+import traceback
+
+import gradio as gr
 from dotenv import load_dotenv
-import re
+
+from utilities.openai_tools import process_situation
+
 
 # Load environment variables
 load_dotenv()
 
 # Check for OpenAI API key
 if not os.getenv("OPENAI_API_KEY"):
-    raise ValueError("OPENAI_API_KEY environment variable is not set. Please set it in your .env file.")
+    raise ValueError(
+        "OPENAI_API_KEY environment variable is not set. Please set it in your .env file."
+    )
 
 def petty_officer_analysis(situation):
     """Process the user's situation through the Petty Officer assistant."""
     if not situation.strip():
         return "You can't fool me with blank reports, soldier! DESCRIBE YOUR SITUATION!"
-    
+
     try:
         # Process the situation - now returns plain text
         response_text = process_situation(situation)
-        
+
         # Format the HTML output - ONLY include the assessment section
         output = f"""
         <div style="font-family: Arial, sans-serif;">
@@ -29,11 +35,11 @@ def petty_officer_analysis(situation):
             </div>
         </div>
         """
-        
+
         return output
-        
+
     except Exception as e:
-        import traceback
+
         error_trace = traceback.format_exc()
         print(f"ERROR in petty_officer_analysis: {str(e)}")
         print(f"Traceback: {error_trace}")
@@ -70,7 +76,7 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
                 width=120,                # Set fixed width
                 interactive=False         # Make it non-interactive (display only)
             )
-        
+
         with gr.Column(scale=3):
             gr.Markdown(
                 """
@@ -81,7 +87,7 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
                 This grumpy E-9 has 90+ years of service and can find an infraction in ANYTHING.
                 """
             )
-    
+
     with gr.Row():
         with gr.Column():
             situation_input = gr.Textbox(
@@ -90,10 +96,10 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
                 lines=5
             )
             submit_button = gr.Button("Submit For Inspection", variant="primary")
-        
+
         with gr.Column():
             output_html = gr.HTML(label="Petty Officer's Response")
-    
+
     # Example situations to try
     gr.Examples(
         [
@@ -108,23 +114,23 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
         fn=petty_officer_analysis,
         cache_examples=False
     )
-    
+
     # Set up the event handlers
     submit_button.click(
         fn=petty_officer_analysis,
         inputs=situation_input,
         outputs=output_html
     )
-    
+
     gr.Markdown(
         """
         ### Disclaimer:
         
-        This app is for entertainment purposes only. All regulations cited may be completely made up. 
+        This app is for entertainment purposes only. Cited regulations may be completely made up. 
         No actual military advice is being provided. Use at your own risk, private!
         """
     )
 
 # Launch the app
 if __name__ == "__main__":
-    app.launch() 
+    app.launch()
