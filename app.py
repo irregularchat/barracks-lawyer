@@ -48,7 +48,7 @@ def petty_officer_analysis(situation):
             <p style="color: inherit;">Technical details: {str(e)}</p>
             </div>"""
 
-# Get Matomo tracking code
+# Get Matomo tracking code from environment variables
 matomo_tracking_code = get_matomo_tracking_code()
 
 # Create the Gradio interface

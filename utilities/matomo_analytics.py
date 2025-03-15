@@ -3,23 +3,17 @@ import os
 from typing import Optional
 
 
-def get_matomo_tracking_code(site_id: Optional[str] = None, matomo_url: Optional[str] = None) -> str:
+def get_matomo_tracking_code() -> str:
     """
-    Generate the Matomo tracking code for the application.
+    Generate the Matomo tracking code for the application based on environment variables.
     
-    Args:
-        site_id: The Matomo site ID. If None, will try to get from environment.
-        matomo_url: The Matomo server URL. If None, will try to get from environment.
-        
     Returns:
         str: The HTML tracking code to be included in the page.
     """
-    # Get values from environment if not provided
-    site_id = site_id or os.getenv("MATOMO_SITE_ID")
-    matomo_url = matomo_url or os.getenv("MATOMO_URL")
-    
-    # Check if Matomo is enabled
+    # Get values from environment
     matomo_enabled = os.getenv("MATOMO_ENABLED", "False").lower() == "true"
+    matomo_url = os.getenv("MATOMO_URL", "")
+    site_id = os.getenv("MATOMO_SITE_ID", "")
     
     if not matomo_enabled or not site_id or not matomo_url:
         return ""  # Return empty string if Matomo is not configured
@@ -37,7 +31,7 @@ def get_matomo_tracking_code(site_id: Optional[str] = None, matomo_url: Optional
       _paq.push(['trackPageView']);
       _paq.push(['enableLinkTracking']);
       (function() {{
-        var u="{matomo_url}/";
+        var u="//{matomo_url}/";
         _paq.push(['setTrackerUrl', u+'matomo.php']);
         _paq.push(['setSiteId', '{site_id}']);
         var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
