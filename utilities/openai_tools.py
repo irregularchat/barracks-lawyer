@@ -11,6 +11,22 @@ load_dotenv()
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
+## Depending on Military Branch. Dictionary of common trops and slangs.
+Army_Trops = {
+    "Sgt": "Sergeant",
+    "SGM": "Sergeant Major",
+    "CSM": "Command Sergeant Major",
+    "SMA": "Sergeant Major of the Army",
+    "Blue Falcon": "Someone that fucks over their buddies",
+    "Window Licker": "Dumber person that can't do task"
+}
+Marine_Trops = {
+    "Sgt": "Sergeant",
+    "SGM": "Sergeant Major",
+    "CSM": "Command Sergeant Major",
+    "SMA": "Sergeant Major of the Army",
+    "Crayon Eater": "Dumber marine that eats their crayons"
+}
 
 def assistant_petty_officer() -> str:
     """Create the Petty Officer assistant with extra petty instructions."""
