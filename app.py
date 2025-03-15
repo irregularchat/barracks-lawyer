@@ -39,11 +39,10 @@ def petty_officer_analysis(situation):
         return output
 
     except Exception as e:
-
         error_trace = traceback.format_exc()
         print(f"ERROR in petty_officer_analysis: {str(e)}")
         print(f"Traceback: {error_trace}")
-        return f"""<div style='color: #ff6b6b; padding: 10px; border: 1px solid #ff6b6b; background-color: rgba(255, 107, 107, 0.1);'>
+        return f"""<div style="color: #ff6b6b; padding: 10px; border: 1px solid #ff6b6b; background-color: rgba(255, 107, 107, 0.1);">
             <h3>ERROR: The Petty Officer is currently busy yelling at someone else.</h3>
             <p style="color: inherit;">Technical details: {str(e)}</p>
             </div>"""
