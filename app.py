@@ -6,6 +6,7 @@ import gradio as gr
 from dotenv import load_dotenv
 
 from utilities.openai_tools import process_situation
+from utilities.matomo_analytics import get_matomo_tracking_code
 
 
 # Load environment variables
@@ -47,6 +48,9 @@ def petty_officer_analysis(situation):
             <p style="color: inherit;">Technical details: {str(e)}</p>
             </div>"""
 
+# Get Matomo tracking code
+matomo_tracking_code = get_matomo_tracking_code()
+
 # Create the Gradio interface
 with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css="""
     .logo-container {
@@ -63,7 +67,7 @@ with gr.Blocks(title="Military Barracks Lawyer", theme=gr.themes.Default(), css=
         object-fit: contain;
         border-radius: 5px;
     }
-""") as app:
+""", head=matomo_tracking_code) as app:
     with gr.Row():
         with gr.Column(scale=1):
             # Use gr.Image with proper parameters
