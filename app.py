@@ -29,8 +29,8 @@ def petty_officer_analysis(situation):
         # Format the HTML output - ONLY include the assessment section
         output = f"""
         <div style="font-family: Arial, sans-serif;">
-            <h3 style="color: #8B0000; border-bottom: 1px solid #ccc; padding-bottom: 8px;">PETTY OFFICER'S ASSESSMENT:</h3>
-            <div style="white-space: pre-wrap; padding: 15px; border: 1px solid #d00; background-color: #fff0f0; border-radius: 5px;">
+            <h3 style="color: #ff6b6b; border-bottom: 1px solid #444; padding-bottom: 8px;">PETTY OFFICER'S ASSESSMENT:</h3>
+            <div style="white-space: pre-wrap; padding: 15px; border: 1px solid #ff6b6b; background-color: rgba(255, 107, 107, 0.1); border-radius: 5px; color: inherit;">
                 {response_text}
             </div>
         </div>
@@ -43,9 +43,9 @@ def petty_officer_analysis(situation):
         error_trace = traceback.format_exc()
         print(f"ERROR in petty_officer_analysis: {str(e)}")
         print(f"Traceback: {error_trace}")
-        return f"""<div style='color: red; padding: 10px; border: 1px solid red;'>
+        return f"""<div style='color: #ff6b6b; padding: 10px; border: 1px solid #ff6b6b; background-color: rgba(255, 107, 107, 0.1);'>
             <h3>ERROR: The Petty Officer is currently busy yelling at someone else.</h3>
-            <p>Technical details: {str(e)}</p>
+            <p style="color: inherit;">Technical details: {str(e)}</p>
             </div>"""
 
 # Create the Gradio interface
